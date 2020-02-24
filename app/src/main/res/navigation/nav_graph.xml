@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/mainFragment">
+
+    <fragment
+        android:id="@+id/mainFragment"
+        android:name="co.ruizhang.trademe.views.MainFragment"
+        android:label="MainFragment"
+        tools:layout="@layout/fragment_main">
+        <action
+            android:id="@+id/action_MainFragment_to_SingleListingFragment"
+            app:destination="@id/SingleListingFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/SingleListingFragment"
+        android:name="co.ruizhang.trademe.views.SingleListingFragment"
+        android:label="SingleListingFragment">
+        <argument
+            android:name="categoryId"
+            app:argType="string" />
+    </fragment>
+</navigation>
