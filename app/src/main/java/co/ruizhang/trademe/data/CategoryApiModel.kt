@@ -12,10 +12,10 @@ open class CategoryApiModel (
     val name : String,
     @Expose
     @SerializedName("Path")
-    val path : String,
+    val path : String?,
     @Expose
     @SerializedName("Subcategories")
-    val subcategories : List<CategoryApiModel>,
+    val subcategories : List<CategoryApiModel>?,
     @Expose
     @SerializedName("IsLeaf")
     val isLeaf : Boolean

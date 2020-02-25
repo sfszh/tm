@@ -3,6 +3,7 @@ package co.ruizhang.trademe.data
 import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.PublishSubject
+import timber.log.Timber
 
 data class Category(
     val id: String,
@@ -27,10 +28,7 @@ class CategoryRepositoryImpl constructor(
             api.getCategory()
                 .subscribeOn(Schedulers.io())
                 .map { root ->
-                    root.subcategories
-                        .map {
-                            Category(it.id, it.name, it.path, it.isLeaf)
-                        }
+                    root.flat()
                 }
                 .map { ResultData.Success(it) }
         }
@@ -38,4 +36,29 @@ class CategoryRepositoryImpl constructor(
     override fun load(useCache: Boolean) {
         loadEvent.onNext(useCache)
     }
+
+    private fun CategoryApiModel.flat(): List<Category> {
+        val nodesToVisit = mutableListOf(this)
+        val domainModelList = mutableListOf<Category>()
+        while (nodesToVisit.isNotEmpty()) {
+            val currentNode = nodesToVisit.first()
+            nodesToVisit.removeAt(0)
+            currentNode.subcategories?.let { nodesToVisit.addAll(it) }
+            if(currentNode.path != null) {
+                domainModelList.add(
+                    Category(
+                        currentNode.id,
+                        currentNode.name,
+                        currentNode.path,
+                        currentNode.isLeaf
+                    )
+                )
+            } else {
+                Timber.d("path is null?")
+            }
+        }
+        return domainModelList
+
+    }
+
 }
