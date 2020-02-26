@@ -6,7 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import co.ruizhang.trademe.databinding.FragmentMainBinding
+import co.ruizhang.trademe.viewmodels.CategoryViewData
 import co.ruizhang.trademe.viewmodels.CategoryViewModel
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -14,7 +16,7 @@ import io.reactivex.rxkotlin.subscribeBy
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import timber.log.Timber
 
-class MainFragment : Fragment() {
+class MainFragment : Fragment(), CategoryListClickListener {
     private val viewModel: CategoryViewModel by viewModel()
 
     private lateinit var binding: FragmentMainBinding
@@ -39,12 +41,17 @@ class MainFragment : Fragment() {
                 MainFragmentDirections.actionMainFragmentToSingleListingFragment("categoryid-placeholder")
             findNavController().navigate(action)
         }
+        binding.categoryList.adapter = CategoryListAdapter(this)
+        binding.categoryList.layoutManager = LinearLayoutManager(context)
 
         viewModel.viewData
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
                 onNext = { viewData ->
                     Timber.d("viewData receive")
+                    viewData.data?.let {
+                        (binding.categoryList.adapter as CategoryListAdapter).submitList(it.categories)
+                    }
                 },
 
                 onError = {
@@ -61,5 +68,13 @@ class MainFragment : Fragment() {
     override fun onStop() {
         super.onStop()
         disposable.dispose()
+    }
+
+    override fun onPathNodeClicked(indexNumber: Int) {
+        viewModel.selectPathNode(indexNumber)
+    }
+
+    override fun onCategoryClicked(category: CategoryViewData) {
+        viewModel.selectCategory(category)
     }
 }
