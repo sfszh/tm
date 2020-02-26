@@ -2,9 +2,9 @@ package co.ruizhang.trademe.viewmodels
 
 import androidx.lifecycle.ViewModel
 import co.ruizhang.trademe.data.CategoryRepository
-import co.ruizhang.trademe.data.ResultData
 import io.reactivex.Observable
 import io.reactivex.rxkotlin.Observables
+import io.reactivex.rxkotlin.withLatestFrom
 import io.reactivex.subjects.BehaviorSubject
 import io.reactivex.subjects.PublishSubject
 import timber.log.Timber
@@ -12,29 +12,31 @@ import timber.log.Timber
 class CategoryViewModel constructor(
     private val repository: CategoryRepository
 ) : ViewModel() {
-    private val currentSelection: BehaviorSubject<Selection> =
-        BehaviorSubject.createDefault(Selection(listOf(ROOT_NODE)))
-
+    private val currentSelection: BehaviorSubject<String> = BehaviorSubject.createDefault("")
     val viewData: Observable<ViewResult<CategoryPageViewData>> =
-        Observables.combineLatest(currentSelection, repository.categories) { selection, result ->
-            val latestSelection = selection.categoryChain.last()
-            val pathString = latestSelection.path.joinToString("/")
-            val categoryViewDataList = result.data?.filter { it.path == pathString }?.map {
-                val pathNodes =
-                    it.path.split("/").mapIndexed { index, s -> PathNodeViewData(index, s) }
-                CategoryViewData(it.id, it.name, pathNodes, it.isLeaf)
-            } ?: emptyList()
-            val nodeViewData = latestSelection.path
-            val viewData = CategoryPageViewData(nodeViewData, categoryViewDataList)
+        Observables.combineLatest(currentSelection, repository.categories)
+            .map{ (selectedId, categroyResult) ->
+                val category =
+                    categroyResult.data ?: return@map ViewResult.Error<CategoryPageViewData>(
+                        null,
+                        IllegalStateException()
+                    )
+                val currentCat =
+                    category.find(selectedId) ?: return@map ViewResult.Error<CategoryPageViewData>(
+                        null,
+                        IllegalStateException()
+                    )
+                val subCats = currentCat.subCategories.map {
+                    CategoryViewData(it.id, it.name, it.path.toPathNodes(), it.isLeaf)
+                }
 
-            when (result) {
-                is ResultData.Success -> ViewResult.Success(viewData)
-                is ResultData.Error -> ViewResult.Error(viewData, result.throwable)
+                val currentPathNodes = currentCat.path.toPathNodes()
+                val pageViewData = CategoryPageViewData(currentPathNodes, subCats)
+                return@map ViewResult.Success(pageViewData)
             }
-        }
 
 
-    private val _navigate: PublishSubject<NavigateEvent.VisitSearchList> = PublishSubject.create()
+    val _navigate: PublishSubject<NavigateEvent.VisitSearchList> = PublishSubject.create()
     val navigate: Observable<NavigateEvent.VisitSearchList> = _navigate
 
     private val _message: PublishSubject<String> = PublishSubject.create()
@@ -49,31 +51,29 @@ class CategoryViewModel constructor(
             Timber.d("is Leaf")
             _message.onNext("is Leaf")
         } else {
-            val categoryChain = currentSelection.value?.categoryChain ?: listOf(ROOT_NODE)
-            val newChain = Selection(categoryChain + category)
-            currentSelection.onNext(newChain)
+            currentSelection.onNext(category.id)
         }
 
     }
 
     fun selectPathNode(indexNumber: Int) {
-        val newSelection = Selection(
-            currentSelection.value?.categoryChain?.subList(0, indexNumber) ?: listOf(
-                ROOT_NODE
-            )
-        )
-
-        currentSelection.onNext(newSelection)
+        //TODO add path node selection
     }
 
 
     fun save() {
-        val selectedCategory = currentSelection.value?.categoryChain?.last() ?: ROOT_NODE
-        _navigate.onNext(NavigateEvent.VisitSearchList(selectedCategory.id))
+        val selectedId = currentSelection.value ?: ""
+        _navigate.onNext(NavigateEvent.VisitSearchList(selectedId))
     }
 
     companion object {
         val ROOT_NODE = CategoryViewData("", "Root", emptyList(), false)
+    }
+
+    private fun String.toPathNodes(): List<PathNodeViewData> {
+        return this.split("/").mapIndexed { index, s ->
+            PathNodeViewData(index, s)
+        }
     }
 }
 
@@ -95,7 +95,7 @@ data class CategoryViewData(
 )
 
 data class Selection(
-    val categoryChain: List<CategoryViewData>
+    val categoryChain: List<String> = emptyList()
 )
 
 

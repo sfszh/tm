@@ -12,6 +12,7 @@ import co.ruizhang.trademe.viewmodels.CategoryViewData
 import co.ruizhang.trademe.viewmodels.CategoryViewModel
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import timber.log.Timber
@@ -37,9 +38,8 @@ class MainFragment : Fragment(), CategoryListClickListener {
         super.onStart()
         disposable = CompositeDisposable()
         binding.chooseButton.setOnClickListener {
-            val action =
-                MainFragmentDirections.actionMainFragmentToSingleListingFragment("categoryid-placeholder")
-            findNavController().navigate(action)
+            viewModel.save()
+
         }
         binding.categoryList.adapter = CategoryListAdapter(this)
         binding.categoryList.layoutManager = LinearLayoutManager(context)
@@ -56,8 +56,23 @@ class MainFragment : Fragment(), CategoryListClickListener {
 
                 onError = {
                     Timber.e(it)
+                })
+            .addTo(disposable)
+
+        viewModel.navigate
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy(
+                onNext = { event ->
+                    val action =
+                        MainFragmentDirections.actionMainFragmentToSingleListingFragment(event.categoryId)
+                    findNavController().navigate(action)
+                },
+                onError = {
+                    Timber.e(it)
                 }
+
             )
+
     }
 
     override fun onResume() {
