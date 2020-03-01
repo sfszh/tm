@@ -4,11 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.ActionBar
+import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import co.ruizhang.trademe.databinding.FragmentMainBinding
+import co.ruizhang.trademe.databinding.PathNodeBinding
 import co.ruizhang.trademe.viewmodels.CategoryViewData
 import co.ruizhang.trademe.viewmodels.CategoryViewModel
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -23,7 +24,6 @@ class MainFragment : Fragment(), CategoryListClickListener {
 
     private lateinit var binding: FragmentMainBinding
     private var disposable: CompositeDisposable = CompositeDisposable()
-
 
 
     override fun onCreateView(
@@ -51,8 +51,23 @@ class MainFragment : Fragment(), CategoryListClickListener {
             .subscribeBy(
                 onNext = { viewData ->
                     Timber.d("viewData receive")
-                    viewData.data?.let {
-                        (binding.categoryList.adapter as CategoryListAdapter).submitList(it.categories)
+                    viewData.data?.let { pageViewData ->
+                        (binding.categoryList.adapter as CategoryListAdapter).submitList(
+                            pageViewData.categories
+                        )
+                        binding.nodesContainer?.removeAllViews()
+                        pageViewData.path
+                            .map { viewData ->
+                                val nodeView = PathNodeBinding.inflate(layoutInflater)
+                                nodeView.node.text = viewData.name
+                                nodeView.node.setOnClickListener {
+                                    viewModel.selectPathNode(viewData.path)
+                                }
+                                nodeView
+                            }
+                            .forEach { nodeView ->
+                                binding.nodesContainer?.addView(nodeView.node)
+                            }
                     }
                 },
 
@@ -87,8 +102,8 @@ class MainFragment : Fragment(), CategoryListClickListener {
         disposable.dispose()
     }
 
-    override fun onPathNodeClicked(indexNumber: Int) {
-        viewModel.selectPathNode(indexNumber)
+    override fun onPathNodeClicked(path: String) {
+        viewModel.selectPathNode(path)
     }
 
     override fun onCategoryClicked(category: CategoryViewData) {

@@ -23,6 +23,20 @@ data class Category(
         }
         return null
     }
+
+
+    fun findByPath(path : String) :Category ? {
+        val nodesToVisit = mutableListOf(this)
+        while (nodesToVisit.isNotEmpty()) {
+            val currentNode = nodesToVisit.first()
+            nodesToVisit.removeAt(0)
+            currentNode.subCategories.let { nodesToVisit.addAll(it) }
+            if (currentNode.path == path) {
+                return currentNode
+            }
+        }
+        return null
+    }
 }
 
 interface CategoryRepository {
