@@ -1,9 +1,8 @@
 package co.ruizhang.trademe.di
 
-import co.ruizhang.trademe.data.CategoryRepository
-import co.ruizhang.trademe.data.CategoryRepositoryImpl
-import co.ruizhang.trademe.data.TrademeApi
+import co.ruizhang.trademe.data.*
 import co.ruizhang.trademe.viewmodels.CategoryViewModel
+import co.ruizhang.trademe.viewmodels.SearchListViewModel
 import okhttp3.OkHttpClient
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
@@ -13,7 +12,10 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 val appModule = module {
     single<CategoryRepository> { CategoryRepositoryImpl(get()) }
+    single<SearchRepository> { SearchRepositoryImpl(get()) }
     viewModel { CategoryViewModel(get()) }
+    viewModel { SearchListViewModel(get()) }
+
 }
 
 

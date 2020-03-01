@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.ActionBar
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -22,6 +23,7 @@ class MainFragment : Fragment(), CategoryListClickListener {
 
     private lateinit var binding: FragmentMainBinding
     private var disposable: CompositeDisposable = CompositeDisposable()
+
 
 
     override fun onCreateView(
