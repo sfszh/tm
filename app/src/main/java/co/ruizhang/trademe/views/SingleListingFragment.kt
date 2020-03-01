@@ -7,6 +7,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.view.MenuItemCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.LinearLayoutManager
 import co.ruizhang.trademe.R
 import co.ruizhang.trademe.databinding.FragmentSingleListingBinding
 import co.ruizhang.trademe.viewmodels.CategoryViewModel
@@ -18,7 +19,7 @@ import io.reactivex.rxkotlin.subscribeBy
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import timber.log.Timber
 
-class SingleListingFragment : Fragment() {
+class SingleListingFragment : Fragment(), ListingListClickListener {
     private val viewModel: SearchListViewModel by viewModel()
     private lateinit var binding: FragmentSingleListingBinding
     private var disposable: CompositeDisposable = CompositeDisposable()
@@ -69,12 +70,16 @@ class SingleListingFragment : Fragment() {
         super.onStart()
         disposable = CompositeDisposable()
         viewModel.setSearchCategory(args.categoryId)
-
+        binding.listingList.adapter = ListingListAdapter(this)
+        binding.listingList.layoutManager = LinearLayoutManager(context)
         viewModel.viewData
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
                 onNext = { viewResult ->
                     Timber.d("viewResult")
+                    viewResult.data?.let {
+                        (binding.listingList.adapter as ListingListAdapter).submitList(it)
+                    }
                 },
                 onError = {
                     Timber.e(it)
@@ -88,5 +93,9 @@ class SingleListingFragment : Fragment() {
     override fun onStop() {
         super.onStop()
         disposable.dispose()
+    }
+
+    override fun onListingItemClicked(id: Long) {
+
     }
 }

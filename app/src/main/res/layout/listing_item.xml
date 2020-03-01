@@ -5,7 +5,7 @@
     <data>
 
     </data>
-    <com.google.android.material.card.MaterialCardView
+    <androidx.cardview.widget.CardView
         android:id="@+id/card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -37,5 +37,5 @@
                 app:layout_constraintTop_toBottomOf="@+id/title"
                 tools:text="$250.00" />
         </androidx.constraintlayout.widget.ConstraintLayout>
-    </com.google.android.material.card.MaterialCardView>
+    </androidx.cardview.widget.CardView>
 </layout>
