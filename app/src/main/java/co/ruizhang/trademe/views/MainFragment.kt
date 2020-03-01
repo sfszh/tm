@@ -3,6 +3,7 @@ package co.ruizhang.trademe.views
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.*
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.MenuItemCompat
 import androidx.fragment.app.Fragment
@@ -41,6 +42,7 @@ class MainFragment : Fragment(), CategoryListClickListener, ListingListClickList
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentMainBinding.inflate(inflater, container, false)
+        (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
         return binding.root
 
     }
