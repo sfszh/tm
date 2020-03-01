@@ -11,7 +11,6 @@ import timber.log.Timber
 class CategoryViewModel constructor(
     private val repository: CategoryRepository
 ) : ViewModel() {
-    private var selectedCategory : String = ""
     private val currentSelection: BehaviorSubject<Selection> = BehaviorSubject.createDefault(
         Selection.CategorySelection("")
     )
@@ -26,7 +25,7 @@ class CategoryViewModel constructor(
                 val currentCat = when (selection) {
                     is Selection.PathSelection -> category.findByPath(selection.path)
                     is Selection.CategorySelection -> {
-                        selectedCategory = selection.id
+                        _selectedCategory.onNext(selection.id)
                         category.find(selection.id)
                     }
                 } ?: return@map ViewResult.Error<CategoryPageViewData>(
@@ -43,11 +42,14 @@ class CategoryViewModel constructor(
             }
 
 
-    val _navigate: PublishSubject<NavigateEvent.VisitSearchList> = PublishSubject.create()
+    private val _navigate: PublishSubject<NavigateEvent.VisitSearchList> = PublishSubject.create()
     val navigate: Observable<NavigateEvent.VisitSearchList> = _navigate
 
     private val _message: PublishSubject<String> = PublishSubject.create()
     val message: Observable<String> = _message
+
+    private val _selectedCategory: BehaviorSubject<String> = BehaviorSubject.createDefault("")
+    val selectedCategory: Observable<String> = _selectedCategory
 
     fun start() {
         repository.load(true)
@@ -69,13 +71,13 @@ class CategoryViewModel constructor(
 
 
     fun save() {
-        _navigate.onNext(NavigateEvent.VisitSearchList(selectedCategory))
+        _navigate.onNext(NavigateEvent.VisitSearchList(_selectedCategory.value ?: ""))
     }
 
     private fun String.toPathNodes(): List<PathNodeViewData> {
         val nodeList = this.split("/")
         return nodeList.mapIndexed { index, s ->
-            val path = nodeList.subList(0, index).joinToString("/")
+            val path = nodeList.subList(0, index + 1).joinToString("/")
             PathNodeViewData(path, s)
         }
     }

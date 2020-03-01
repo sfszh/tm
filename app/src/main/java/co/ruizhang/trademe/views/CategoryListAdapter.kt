@@ -9,7 +9,6 @@ import co.ruizhang.trademe.databinding.CategoryListCategoryItemBinding
 import co.ruizhang.trademe.viewmodels.CategoryViewData
 
 interface CategoryListClickListener {
-    fun onPathNodeClicked(indexNumber: String)
     fun onCategoryClicked(category: CategoryViewData)
 }
 

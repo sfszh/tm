@@ -29,6 +29,7 @@
             android:id="@+id/horizontal_scroll_view"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
             android:gravity="start"
             app:layout_constraintBottom_toTopOf="@id/category_list"
             app:layout_constraintEnd_toEndOf="parent"

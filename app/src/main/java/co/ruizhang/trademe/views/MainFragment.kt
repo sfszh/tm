@@ -1,17 +1,19 @@
 package co.ruizhang.trademe.views
 
+import android.content.res.Configuration
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import androidx.core.view.children
+import android.view.*
+import androidx.appcompat.widget.SearchView
+import androidx.core.view.MenuItemCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import co.ruizhang.trademe.R
 import co.ruizhang.trademe.databinding.FragmentMainBinding
 import co.ruizhang.trademe.databinding.PathNodeBinding
 import co.ruizhang.trademe.viewmodels.CategoryViewData
 import co.ruizhang.trademe.viewmodels.CategoryViewModel
+import co.ruizhang.trademe.viewmodels.SearchListViewModel
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
@@ -19,11 +21,18 @@ import io.reactivex.rxkotlin.subscribeBy
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import timber.log.Timber
 
-class MainFragment : Fragment(), CategoryListClickListener {
-    private val viewModel: CategoryViewModel by viewModel()
+class MainFragment : Fragment(), CategoryListClickListener, ListingListClickListener {
+    private val categoryViewModel: CategoryViewModel by viewModel()
+    private val searchViewModel: SearchListViewModel by viewModel()
+
 
     private lateinit var binding: FragmentMainBinding
     private var disposable: CompositeDisposable = CompositeDisposable()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
 
 
     override fun onCreateView(
@@ -36,17 +45,30 @@ class MainFragment : Fragment(), CategoryListClickListener {
 
     }
 
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            //Do some stuff
+
+            inflater.inflate(R.menu.menu_main, menu)
+            val search = menu.findItem(R.id.search)
+            val searchView: SearchView = MenuItemCompat.getActionView(search) as SearchView
+            initSearch(searchView)
+        }
+    }
+
+
     override fun onStart() {
         super.onStart()
         disposable = CompositeDisposable()
         binding.chooseButton.setOnClickListener {
-            viewModel.save()
+            categoryViewModel.save()
 
         }
         binding.categoryList.adapter = CategoryListAdapter(this)
         binding.categoryList.layoutManager = LinearLayoutManager(context)
 
-        viewModel.viewData
+        categoryViewModel.viewData
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
                 onNext = { viewData ->
@@ -59,9 +81,10 @@ class MainFragment : Fragment(), CategoryListClickListener {
                         pageViewData.path
                             .map { viewData ->
                                 val nodeView = PathNodeBinding.inflate(layoutInflater)
-                                nodeView.node.text = viewData.name
+                                nodeView.node.text =
+                                    if (viewData.name.isEmpty()) "root" else viewData.name
                                 nodeView.node.setOnClickListener {
-                                    viewModel.selectPathNode(viewData.path)
+                                    categoryViewModel.selectPathNode(viewData.path)
                                 }
                                 nodeView
                             }
@@ -75,8 +98,38 @@ class MainFragment : Fragment(), CategoryListClickListener {
                     Timber.e(it)
                 })
             .addTo(disposable)
+        categoryViewModel.selectedCategory
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy(
+                onNext = { categoryId ->
+                    searchViewModel.setSearchCategory(categoryId)
+                },
+                onError = {
+                    Timber.e(it)
+                }
+            )
 
-        viewModel.navigate
+        binding.listingList.adapter = ListingListAdapter(this)
+        binding.listingList.layoutManager = LinearLayoutManager(context)
+        searchViewModel.viewData
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeBy(
+                onNext = { viewResult ->
+                    Timber.d("viewResult")
+                    viewResult.data?.let {
+                        (binding.listingList.adapter as ListingListAdapter).submitList(it)
+                    }
+                },
+                onError = {
+                    Timber.e(it)
+
+                }
+            )
+            .addTo(disposable)
+
+
+
+        categoryViewModel.navigate
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
                 onNext = { event ->
@@ -94,7 +147,7 @@ class MainFragment : Fragment(), CategoryListClickListener {
 
     override fun onResume() {
         super.onResume()
-        viewModel.start()
+        categoryViewModel.start()
     }
 
     override fun onStop() {
@@ -102,11 +155,28 @@ class MainFragment : Fragment(), CategoryListClickListener {
         disposable.dispose()
     }
 
-    override fun onPathNodeClicked(path: String) {
-        viewModel.selectPathNode(path)
+
+    private fun initSearch(searchView: SearchView) {
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                newText?.let {
+                    searchViewModel.setSearchText(it)
+                }
+                return true
+            }
+
+        })
     }
 
     override fun onCategoryClicked(category: CategoryViewData) {
-        viewModel.selectCategory(category)
+        categoryViewModel.selectCategory(category)
+    }
+
+    override fun onListingItemClicked(id: Long) {
+
     }
 }
