@@ -1,6 +1,5 @@
 package co.ruizhang.trademe.data
 
-import android.net.Uri
 import co.ruizhang.trademe.BuildConfig
 import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers

@@ -98,4 +98,7 @@ dependencies {
 
     // optional - RxJava support for Room
     implementation "androidx.room:room-rxjava2:$room_version"
+
+    implementation 'com.squareup.picasso:picasso:2.71828'
+
 }

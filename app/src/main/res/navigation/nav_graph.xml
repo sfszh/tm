@@ -13,6 +13,10 @@
         <action
             android:id="@+id/action_MainFragment_to_SingleListingFragment"
             app:destination="@id/SingleListingFragment" />
+
+        <action
+            android:id="@+id/action_MainFragment_to_ListingDetailFragment"
+            app:destination="@id/ListingDetailFragment" />
     </fragment>
     <fragment
         android:id="@+id/SingleListingFragment"
@@ -20,6 +24,18 @@
         android:label="SingleListingFragment">
         <argument
             android:name="categoryId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_SingleListingFragment_to_ListingDetailFragment"
+            app:destination="@id/ListingDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/ListingDetailFragment"
+        android:name="co.ruizhang.trademe.views.ListingDetailFragment"
+        android:label="ListingDetailFragment">
+        <argument
+            android:name="listingId"
             app:argType="string" />
     </fragment>
 </navigation>

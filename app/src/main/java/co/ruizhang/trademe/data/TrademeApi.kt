@@ -1,10 +1,8 @@
 package co.ruizhang.trademe.data
 
+import co.ruizhang.trademe.BuildConfig
 import io.reactivex.Single
-import retrofit2.http.GET
-import retrofit2.http.Header
-import retrofit2.http.Headers
-import retrofit2.http.Query
+import retrofit2.http.*
 
 interface TrademeApi {
     @GET("/v1/Categories.json")
@@ -20,4 +18,17 @@ interface TrademeApi {
         @Query("category") category: String,
         @Query("page") page: Int
     ): Single<SearchResponse>
+
+    @GET("/v1/Listings/{listing_id}.json")
+    @Headers("Content-type: application/json")
+    fun detail(
+        @Header("Authorization") authorization: String,
+        @Path(value = "listing_id", encoded = true) listingId: Long
+    ): Single<ListedItemDetailReponse>
+}
+
+fun getAuthorization() : String {
+   return "OAuth oauth_consumer_key=\"${BuildConfig.CONSUMER_KEY}\",oauth_signature_method=\"PLAINTEXT\",oauth_signature=\"${
+    BuildConfig.CONSUMER_SECRET
+    }%26\""
 }

@@ -179,6 +179,7 @@ class MainFragment : Fragment(), CategoryListClickListener, ListingListClickList
     }
 
     override fun onListingItemClicked(id: Long) {
-
+        val action = MainFragmentDirections.actionMainFragmentToListingDetailFragment(id.toString())
+        findNavController().navigate(action)
     }
 }

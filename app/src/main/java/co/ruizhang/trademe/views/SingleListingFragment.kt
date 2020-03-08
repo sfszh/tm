@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.MenuItemCompat
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import co.ruizhang.trademe.R
@@ -29,7 +30,7 @@ class SingleListingFragment : Fragment(), ListingListClickListener {
         setHasOptionsMenu(true)
     }
 
-    val args: SingleListingFragmentArgs by navArgs()
+    private val args: SingleListingFragmentArgs by navArgs()
 
 
     override fun onCreateView(
@@ -96,6 +97,8 @@ class SingleListingFragment : Fragment(), ListingListClickListener {
     }
 
     override fun onListingItemClicked(id: Long) {
-
+        val action =
+            SingleListingFragmentDirections.actionSingleListingFragmentToListingDetailFragment(id.toString())
+        findNavController().navigate(action)
     }
 }
