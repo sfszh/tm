@@ -40,6 +40,9 @@ class SingleListingFragment : Fragment(), ListingListClickListener {
     ): View? {
         binding = FragmentSingleListingBinding.inflate(inflater, container, false)
         (activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
+        binding.listingList.adapter = ListingListAdapter(this)
+        binding.listingList.layoutManager = LinearLayoutManager(context)
+        binding.listingList.addItemDecoration( ListingListDecoration())
         return binding.root
     }
 
@@ -71,8 +74,6 @@ class SingleListingFragment : Fragment(), ListingListClickListener {
         super.onStart()
         disposable = CompositeDisposable()
         viewModel.setSearchCategory(args.categoryId)
-        binding.listingList.adapter = ListingListAdapter(this)
-        binding.listingList.layoutManager = LinearLayoutManager(context)
         viewModel.viewData
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(

@@ -30,8 +30,7 @@ class CategoryViewModel constructor(
                     }
                 } ?: return@map ViewResult.Error<CategoryPageViewData>(
                     null,
-                    IllegalStateException()
-                )
+                    IllegalStateException())
                 val subCats = currentCat.subCategories.map {
                     CategoryViewData(it.id, it.name, it.path.toPathNodes(), it.isLeaf)
                 }
