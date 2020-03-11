@@ -13,7 +13,8 @@ interface SearchRepository {
 data class ListingItem(
     val id: Long,
     val title: String,
-    val price: Double
+    val price: Double,
+    val imageUrl : String?
 )
 
 
@@ -42,7 +43,7 @@ class SearchRepositoryImpl(
                 .subscribeOn(Schedulers.io())
         }
         .map { resp: SearchResponse ->
-            val list = resp.list.map { ListingItem(it.listingId, it.title, it.price) }
+            val list = resp.list.map { ListingItem(it.listingId, it.title, it.price, it.imageUrl) }
             ResultData.Success(list) as ResultData<List<ListingItem>>
         }
         .onErrorReturn {

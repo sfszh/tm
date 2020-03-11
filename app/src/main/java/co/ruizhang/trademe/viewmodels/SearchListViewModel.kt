@@ -25,7 +25,8 @@ class SearchListViewModel(private val searchRepository: SearchRepository) : View
                 ListingItemViewData(
                     it.id,
                     it.title,
-                    String.format("%.2f", it.price)
+                    String.format("%.2f", it.price),
+                    it.imageUrl
                 )
             }.let { ViewResult.Success(it) }
         }
@@ -63,7 +64,8 @@ class SearchListViewModel(private val searchRepository: SearchRepository) : View
 data class ListingItemViewData(
     val id: Long,
     val name: String,
-    val price: String
+    val price: String,
+    val imageUrl: String?
 )
 
 

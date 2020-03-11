@@ -21,5 +21,7 @@ open class ListingApiModel(
     val title : String,
     @Expose
     @SerializedName("Number")
-    val price : Double
+    val price : Double,
+    @SerializedName("PictureHref")
+    val imageUrl : String?
 )
