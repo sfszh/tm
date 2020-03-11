@@ -14,22 +14,11 @@ class SearchListViewModel(private val searchRepository: SearchRepository) : View
     private val categoryEvent: BehaviorSubject<String> = BehaviorSubject.createDefault("")
     private val searchTextEvent: BehaviorSubject<String> = BehaviorSubject.create()
     private val compositeDisposable: CompositeDisposable = CompositeDisposable()
-    val viewData: Observable<ViewResult<List<ListingItemViewData>>> = searchRepository.listings
-        .map { result ->
-            val list = result.data ?: return@map ViewResult.Error<List<ListingItemViewData>>(
-                null,
-                IllegalStateException()
-            )
+    private val _viewData : BehaviorSubject<ViewResult<List<ListingItemViewData>>> = BehaviorSubject.create()
+    val viewData: Observable<ViewResult<List<ListingItemViewData>>> = _viewData
 
-            return@map list.map {
-                ListingItemViewData(
-                    it.id,
-                    it.title,
-                    String.format("%.2f", it.price),
-                    it.imageUrl
-                )
-            }.let { ViewResult.Success(it) }
-        }
+
+
 
 
     init {
@@ -40,6 +29,32 @@ class SearchListViewModel(private val searchRepository: SearchRepository) : View
             }
             .subscribeBy(
                 {}, {}
+            )
+            .addTo(compositeDisposable)
+
+        searchRepository.listings
+            .map { result ->
+                val list = result.data ?: return@map ViewResult.Error<List<ListingItemViewData>>(
+                    null,
+                    IllegalStateException()
+                )
+
+                return@map list.map {
+                    ListingItemViewData(
+                        it.id,
+                        it.title,
+                        String.format("%.2f", it.price),
+                        it.imageUrl
+                    )
+                }.let { ViewResult.Success(it) }
+            }
+            .subscribeBy(
+                onNext = {
+                    _viewData.onNext(it)
+                },
+                onError = {
+
+                }
             )
             .addTo(compositeDisposable)
 
