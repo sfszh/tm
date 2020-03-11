@@ -30,7 +30,8 @@ class CategoryViewModel constructor(
                     }
                 } ?: return@map ViewResult.Error<CategoryPageViewData>(
                     null,
-                    IllegalStateException())
+                    IllegalStateException()
+                )
                 val subCats = currentCat.subCategories.map {
                     CategoryViewData(it.id, it.name, it.path.toPathNodes(), it.isLeaf)
                 }
@@ -55,13 +56,7 @@ class CategoryViewModel constructor(
     }
 
     fun selectCategory(category: CategoryViewData) {
-        if (category.isLeaf) {
-            Timber.d("is Leaf")
-            _message.onNext("is Leaf")
-        } else {
-            currentSelection.onNext(Selection.CategorySelection(category.id))
-        }
-
+        currentSelection.onNext(Selection.CategorySelection(category.id))
     }
 
     fun selectPathNode(path: String) {
