@@ -15,6 +15,7 @@ import co.ruizhang.trademe.databinding.PathNodeBinding
 import co.ruizhang.trademe.viewmodels.CategoryViewData
 import co.ruizhang.trademe.viewmodels.CategoryViewModel
 import co.ruizhang.trademe.viewmodels.SearchListViewModel
+import co.ruizhang.trademe.viewmodels.ViewResult
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
@@ -75,24 +76,40 @@ class MainFragment : Fragment(), CategoryListClickListener, ListingListClickList
             .subscribeBy(
                 onNext = { viewData ->
                     Timber.d("viewData receive")
-                    viewData.data?.let { pageViewData ->
-                        (binding.categoryList.adapter as CategoryListAdapter).submitList(
-                            pageViewData.categories
-                        )
-                        binding.nodesContainer?.removeAllViews()
-                        pageViewData.path
-                            .map { viewData ->
-                                val nodeView = PathNodeBinding.inflate(layoutInflater)
-                                nodeView.node.text =
-                                    if (viewData.name.isEmpty()) "root" else viewData.name
-                                nodeView.node.setOnClickListener {
-                                    categoryViewModel.selectPathNode(viewData.path)
+                    when (viewData) {
+                        is ViewResult.Loading -> {
+                            if (viewData.data == null) {
+                                binding.emptyStateProgress!!.visibility = View.VISIBLE
+                            }
+                            binding.emptyStateText!!.visibility = View.INVISIBLE
+
+                        }
+                        is ViewResult.Success -> viewData.data?.let { pageViewData ->
+                            binding.emptyStateProgress!!.visibility = View.INVISIBLE
+                            binding.emptyStateProgress!!.visibility = View.INVISIBLE
+                            (binding.categoryList.adapter as CategoryListAdapter).submitList(
+                                pageViewData.categories
+                            )
+                            binding.nodesContainer?.removeAllViews()
+                            pageViewData.path
+                                .map { viewData ->
+                                    val nodeView = PathNodeBinding.inflate(layoutInflater)
+                                    nodeView.node.text =
+                                        if (viewData.name.isEmpty()) "root" else viewData.name
+                                    nodeView.node.setOnClickListener {
+                                        categoryViewModel.selectPathNode(viewData.path)
+                                    }
+                                    nodeView
                                 }
-                                nodeView
-                            }
-                            .forEach { nodeView ->
-                                binding.nodesContainer?.addView(nodeView.node)
-                            }
+                                .forEach { nodeView ->
+                                    binding.nodesContainer?.addView(nodeView.node)
+                                }
+                        }
+                        is ViewResult.Error -> {
+                            binding.emptyStateText!!.visibility = View.VISIBLE
+                            binding.emptyStateProgress!!.visibility = View.INVISIBLE
+
+                        }
                     }
                 },
 

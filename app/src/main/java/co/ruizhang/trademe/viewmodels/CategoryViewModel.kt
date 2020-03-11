@@ -40,6 +40,7 @@ class CategoryViewModel constructor(
                 val pageViewData = CategoryPageViewData(currentPathNodes, subCats)
                 return@map ViewResult.Success(pageViewData)
             }
+            .startWith(ViewResult.Loading<CategoryPageViewData>(null))
 
 
     private val _navigate: PublishSubject<NavigateEvent.VisitSearchList> = PublishSubject.create()
